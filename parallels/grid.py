@@ -79,7 +79,9 @@ class Terminal(object):
         # for colours
         # self.pos = Vec2d(x, y)
         self.radius = radius
-        self.colour = (150, 150, 150)  # only for text colour
+        self._active_colour = (255, 255, 255)
+        self._inactive_colour = (150, 150, 150)
+        self.colour = self._inactive_colour  # only for text colour
         self.group = group
         self._font = font.SysFont('Arial', 40, bold=True)
         self.label = self._font.render(group, 0, self.colour)
@@ -97,9 +99,9 @@ class Terminal(object):
 
     def set_used(self, used=True):
         self.used = used
-        self.render_label((255, 255, 255))
+        self.render_label(self._active_colour)
         if not used:
-            self.render_label((150, 150, 150))
+            self.render_label(self._inactive_colour)
             self.used = used
 
 
