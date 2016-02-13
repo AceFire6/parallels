@@ -87,6 +87,7 @@ class DrawnLine(object):
         self.grid = grid
         self.start_point = grid.get_vec_grid_coords(start_x, start_y)
         self.grid_points = [self.start_point]
+        self.draw_points = [self.to_draw_point(self.start_point)]
         self.colour = colour
 
     @property
@@ -95,9 +96,16 @@ class DrawnLine(object):
         return self.grid.get_terminal(screen_coords)
 
     def add_point(self, screen_x_or_pair, screen_y=None):
-        # TODO: Add moveback logic
         grid_point = self.grid.get_vec_grid_coords(screen_x_or_pair, screen_y)
+
+        for i in xrange(len(self.grid_points)):
+            if grid_point == self.grid_points[i]:
+                self.grid_points = self.grid_points[:i+1]
+                self.draw_points = self.draw_points[:i+1]
+                return
+
         self.grid_points.append(grid_point)
+        self.draw_points.append(self.to_draw_point(grid_point))
 
     def get_points_adjacent_to_last_point(self):
         point = self.grid_points[-1]
@@ -113,3 +121,12 @@ class DrawnLine(object):
             adjacent_points.append(Vec2d(point.x + 1, point.y))
 
         return adjacent_points
+
+    def to_draw_point(self, point):
+        label = self.start_terminal.label
+        screen_point = self.grid.get_pos_from_grid_coords(point)
+        # Only for labels
+        screen_point += self.grid.block_size / 2
+        screen_point = (screen_point.x - label.get_width() / 2,
+                        screen_point.y - label.get_height() / 2)
+        return screen_point

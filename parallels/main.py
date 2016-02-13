@@ -100,7 +100,21 @@ def render(screen):
         for term in terms:
             screen.blit(term.label, term.pos)
             # pygame.draw.circle(screen, term.colour, term.pos, term.radius)
+
+    for line in GRID.finished_lines:
+        line_label = line.start_terminal.label
+        for point in line.draw_points:
+            screen.blit(line_label, point)
     # END DRAW GRID
+
+    # DRAW CUR_LINE
+    if CUR_LINE:
+        points = CUR_LINE.draw_points
+        label = CUR_LINE.start_terminal.label
+
+        for point in points:
+            screen.blit(label, point)
+    # END DRAW CUR_LINE
 
     pygame.display.flip()
 
