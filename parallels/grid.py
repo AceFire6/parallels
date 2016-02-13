@@ -8,10 +8,29 @@ class Grid(object):
         self.columns = columns
         self.rows = rows
         self.block_size = block_size
-        self.grid = [[0 for i in xrange(6)] for j in xrange(6)]
-        self._terminals_grid = [[None for i in xrange(6)] for j in xrange(6)]
+        self.grid = [[0 for i in xrange(columns)] for j in xrange(rows)]
+        self._terminals_grid = [
+            [None for i in xrange(columns)] for j in xrange(rows)]
         self.terminals = {}
         self.finished_lines = []
+
+    def reset(self):
+        for line in self.finished_lines:
+            line.start_terminal.set_used(False)
+            line.end_terminal.set_used(False)
+
+        for y in xrange(self.rows):
+            for x in xrange(self.columns):
+                term_grid_val = self._terminals_grid[y][x]
+                if term_grid_val is not None:
+                    self.grid[y][x] = term_grid_val.group
+                else:
+                    self.grid[y][x] = 0
+        self.finished_lines = []
+
+    @property
+    def is_completed(self):
+        return len(self.finished_lines) == len(self.terminals)
 
     def add_terminals(self, name, vec_term1, vec_term2, colour):
         self.grid[vec_term1.y][vec_term1.x] = name
@@ -109,15 +128,19 @@ class DrawnLine(object):
     def __init__(self, grid, start_x, start_y, colour):
         self.grid = grid
         self.start_point = grid.get_vec_grid_coords(start_x, start_y)
+        self.start_terminal = self.get_start_terminal()
+        self.end_terminal = None
         self.grid_points = [self.start_point]
         self.draw_points = [self.grid_point_to_draw_point(self.start_point)]
         self.colour = colour
         self.group = self.start_terminal.group
 
-    @property
-    def start_terminal(self):
+    def get_start_terminal(self):
         screen_coords = self.grid.get_pos_from_grid_coords(self.start_point)
         return self.grid.get_terminal(screen_coords)
+
+    def set_end_terminal(self):
+        self.end_terminal = self.grid.get_terminal(self.draw_points[-1])
 
     def add_point(self, screen_x_or_pair, screen_y=None):
         grid_point = self.grid.get_vec_grid_coords(screen_x_or_pair, screen_y)
@@ -136,12 +159,12 @@ class DrawnLine(object):
         potential_moves = []
         if point.y >= 1:
             potential_moves.append(Vec2d(point.x, point.y - 1))
-        if point.y < self.grid.rows:
+        if point.y + 1 < self.grid.rows:
             potential_moves.append(Vec2d(point.x, point.y + 1))
 
         if point.x >= 1:
             potential_moves.append(Vec2d(point.x - 1, point.y))
-        if point.x < self.grid.columns:
+        if point.x + 1 < self.grid.columns:
             potential_moves.append(Vec2d(point.x + 1, point.y))
 
         adjacent_points = []
@@ -161,7 +184,7 @@ class DrawnLine(object):
         screen_point += self.grid.block_size / 2
         screen_point = (screen_point.x - label.get_width() / 2,
                         screen_point.y - label.get_height() / 2)
-        return screen_point
+        return Vec2d(screen_point)
 
     def grid_points_to_draw_points(self, points):
         return [self.grid_point_to_draw_point(point)for point in points]

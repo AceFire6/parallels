@@ -1,5 +1,7 @@
 from pygame import Rect
 
+from lib.vec2d import Vec2d
+
 
 def get_inner_square(square):
     inner_sq = Rect(square)
@@ -19,3 +21,9 @@ def get_inner_square_from_point(vec_point, size):
 def alpha(color, alpha_val):
     color.a = alpha_val
     return color
+
+
+def center_text(text, x, y, width, height):
+    center = Vec2d(x + width, y + height) / 2
+    text_adjustment = Vec2d(-text.get_width() / 2, -text.get_height() / 2)
+    return center + text_adjustment

@@ -5,7 +5,12 @@ from pygame.color import Color
 from lib.vec2d import Vec2d
 
 from grid import Grid, DrawnLine
-from utils import alpha, get_inner_square, get_inner_square_from_point
+from utils import (alpha, center_text, get_inner_square,
+                   get_inner_square_from_point)
+
+
+FINISHED = False
+FINISHED_TEXT = None
 
 LINES = []
 CUR_LINE = None
@@ -23,7 +28,7 @@ COLOURS = [WHITE, RED, GREEN, BLUE]
 
 
 def setup():
-    global GRID, GRID_SIZE
+    global GRID, GRID_SIZE, FINISHED_TEXT
 
     num_blocks = 5
     screen = pygame.display.get_surface()
@@ -34,12 +39,16 @@ def setup():
     GRID.add_terminals('1', Vec2d(0, 1), Vec2d(3, 3), RED)
     GRID.add_terminals('2', Vec2d(4, 0), Vec2d(1, 3), BLUE)
     GRID.add_terminals('3', Vec2d(0, 0), Vec2d(3, 1), GREEN)
-    GRID.add_terminals('4', Vec2d(0, 2), Vec2d(1, 4), RED + BLUE)
+    GRID.add_terminals('4', Vec2d(1, 2), Vec2d(1, 4), RED + BLUE)
+
+    finished_font = pygame.font.SysFont('Arial', 100, bold=True)
+    win_text = 'YOU DID IT!'
+    FINISHED_TEXT = finished_font.render(win_text, 0, WHITE)
 
 
 def events():
     """Event section of game loop. Handle user input. Return boolean."""
-    global CUR_LINE
+    global CUR_LINE, FINISHED
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Program window quit button press
@@ -47,7 +56,13 @@ def events():
         elif event.type == pygame.KEYUP:  # Key pressed event
             if event.key == pygame.K_ESCAPE:
                 return False
-        elif event.type == pygame.MOUSEBUTTONDOWN:  # Mouse event
+            elif event.key == pygame.K_r:
+                if CUR_LINE:
+                    CUR_LINE.start_terminal.set_used(False)
+                GRID.reset()
+                CUR_LINE = None
+                FINISHED = False
+        elif event.type == pygame.MOUSEBUTTONDOWN and not FINISHED:  # Mouse
             states = pygame.mouse.get_pressed()
             mouse_pos = Vec2d(pygame.mouse.get_pos())
             if states == (1, 0, 0):  # Left click
@@ -63,6 +78,8 @@ def events():
                     if click_point in adj_blocks:
                         if terminal and not terminal.used:  # line is finished
                             if terminal.group == CUR_LINE.group:
+                                CUR_LINE.add_point(mouse_pos)
+                                CUR_LINE.set_end_terminal()
                                 terminal.set_used()
                                 GRID.add_line(CUR_LINE)
                                 CUR_LINE = None
@@ -77,8 +94,10 @@ def events():
 
 
 def update():
-    """Update the formation and units."""
-    pass
+    global FINISHED
+
+    if GRID.is_completed:
+        FINISHED = True
 
 
 def render(screen):
@@ -130,8 +149,12 @@ def render(screen):
             inner_sq = get_inner_square_from_point(Vec2d(point), GRID_SIZE)
             pygame.draw.rect(sur, alpha(WHITE, 50), inner_sq)
         screen.blit(sur, (0, 0))
-
     # END DRAW CUR_LINE
+
+    if FINISHED:
+        width = height = screen.get_width()
+        screen.blit(FINISHED_TEXT,
+                    center_text(FINISHED_TEXT, 0, 0, width, height))
 
     pygame.display.flip()
 
