@@ -43,7 +43,7 @@ def setup():
 
     finished_font = pygame.font.SysFont('Arial', 100, bold=True)
     win_text = 'YOU DID IT!'
-    FINISHED_TEXT = finished_font.render(win_text, 0, WHITE)
+    FINISHED_TEXT = finished_font.render(win_text, 0, RED)
 
 
 def events():
@@ -106,7 +106,6 @@ def render(screen):
     m_grid_pos = GRID.get_vec_grid_coords(mouse_pos.x, mouse_pos.y)
 
     screen.fill(BLACK)
-    screen.set_colorkey(BLACK)
 
     # START DRAW GRID
     for y in xrange(GRID.rows):
