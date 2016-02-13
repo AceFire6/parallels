@@ -5,7 +5,7 @@ from pygame.color import Color
 from lib.vec2d import Vec2d
 
 from grid import Grid, DrawnLine
-from utils import get_inner_square, alpha
+from utils import alpha, get_inner_square, get_inner_square_from_point
 
 LINES = []
 CUR_LINE = None
@@ -33,6 +33,8 @@ def setup():
     # Add terminals to the grid
     GRID.add_terminals('1', Vec2d(0, 1), Vec2d(3, 3), RED)
     GRID.add_terminals('2', Vec2d(4, 0), Vec2d(1, 3), BLUE)
+    GRID.add_terminals('3', Vec2d(0, 0), Vec2d(3, 1), GREEN)
+    GRID.add_terminals('4', Vec2d(0, 2), Vec2d(1, 4), RED + BLUE)
 
 
 def events():
@@ -57,10 +59,10 @@ def events():
                         terminal.set_used()
                 else:
                     click_point = GRID.get_vec_grid_coords(mouse_pos)
-                    adj_blocks = CUR_LINE.get_points_adjacent_to_last_point()
+                    adj_blocks = CUR_LINE.get_grid_possible_moves()
                     if click_point in adj_blocks:
                         if terminal and not terminal.used:  # line is finished
-                            if terminal.group == CUR_LINE.start_terminal.group:
+                            if terminal.group == CUR_LINE.group:
                                 terminal.set_used()
                                 GRID.add_line(CUR_LINE)
                                 CUR_LINE = None
@@ -68,7 +70,7 @@ def events():
                             CUR_LINE.add_point(mouse_pos)
             elif states == (0, 0, 1):  # Right click
                 if CUR_LINE:
-                    CUR_LINE.start_terminal.used = False
+                    CUR_LINE.start_terminal.set_used(False)
                     CUR_LINE = False
 
     return True
@@ -92,9 +94,10 @@ def render(screen):
         for x in xrange(GRID.columns):
             cur_square = Rect(
                     x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
-            grid_val = GRID.get_grid_value(x, y)
-            colour = COLOURS[grid_val]  # Change colour based on grid value
-            if m_grid_pos.x == x and m_grid_pos.y == y and grid_val == 0:
+            # grid_val = GRID.get_grid_value(x, y)
+            # COLOURS[grid_val]  # Change colour based on grid value
+            colour = WHITE
+            if m_grid_pos.x == x and m_grid_pos.y == y:
                 # Semi-transparent Hover
                 inner_sq = get_inner_square(cur_square)
                 sur = screen.convert_alpha()
@@ -120,6 +123,14 @@ def render(screen):
 
         for point in points:
             screen.blit(label, point)
+
+        sur = screen.convert_alpha()
+        for point in CUR_LINE.get_grid_possible_moves():
+            # Semi-transparent Hover
+            inner_sq = get_inner_square_from_point(Vec2d(point), GRID_SIZE)
+            pygame.draw.rect(sur, alpha(WHITE, 50), inner_sq)
+        screen.blit(sur, (0, 0))
+
     # END DRAW CUR_LINE
 
     pygame.display.flip()

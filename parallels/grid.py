@@ -14,6 +14,9 @@ class Grid(object):
         self.finished_lines = []
 
     def add_terminals(self, name, vec_term1, vec_term2, colour):
+        self.grid[vec_term1.y][vec_term1.x] = name
+        self.grid[vec_term2.y][vec_term2.x] = name
+
         center = self.block_size / 2
         term1_pos = self.get_pos_from_grid_coords(vec_term1) + center
         term2_pos = self.get_pos_from_grid_coords(vec_term2) + center
@@ -35,10 +38,20 @@ class Grid(object):
         else:
             return Vec2d(screen_x_or_pair / self.block_size)
 
-    def get_grid_value(self, x_pos, y_pos):
-        row = y_pos / self.block_size
-        column = x_pos / self.block_size
-        return self.grid[row][column]
+    def get_grid_value_from_screen(self, screen_x, screen_y):
+        y = screen_y / self.block_size
+        x = screen_x / self.block_size
+        return self.get_grid_value(x, y)
+
+    def get_grid_value(self, x, y):
+        return self.grid[y][x]
+
+    def is_grid_collision(self, vec_point, group):
+        grid_val = self.get_grid_value(vec_point.x, vec_point.y)
+        if grid_val == 0 or grid_val == group:
+            return False
+        else:
+            return True
 
     def set_grid_value(self, row, column, value):
         self.grid[row][column] = value
@@ -54,6 +67,8 @@ class Grid(object):
         return self._terminals_grid[coords.y][coords.x]
 
     def add_line(self, line):
+        for point in line.grid_points:
+            self.grid[point.y][point.x] = line.start_terminal.group
         self.finished_lines.append(line)
 
 
@@ -73,13 +88,19 @@ class Terminal(object):
                          y - self.label.get_height() / 2)
         self.used = False
 
+    def render_label(self, colour):
+        self.colour = colour
+        self.label = self._font.render(self.group, 0, self.colour)
+
     def matches(self, other_terminal):
         return self.group == other_terminal.group
 
-    def set_used(self, not_used=None):
-        self.used = True
-        if not_used:
-            self.used = not_used
+    def set_used(self, used=True):
+        self.used = used
+        self.render_label((255, 255, 255))
+        if not used:
+            self.render_label((150, 150, 150))
+            self.used = used
 
 
 class DrawnLine(object):
@@ -87,8 +108,9 @@ class DrawnLine(object):
         self.grid = grid
         self.start_point = grid.get_vec_grid_coords(start_x, start_y)
         self.grid_points = [self.start_point]
-        self.draw_points = [self.to_draw_point(self.start_point)]
+        self.draw_points = [self.grid_point_to_draw_point(self.start_point)]
         self.colour = colour
+        self.group = self.start_terminal.group
 
     @property
     def start_terminal(self):
@@ -105,24 +127,32 @@ class DrawnLine(object):
                 return
 
         self.grid_points.append(grid_point)
-        self.draw_points.append(self.to_draw_point(grid_point))
+        self.draw_points.append(self.grid_point_to_draw_point(grid_point))
 
-    def get_points_adjacent_to_last_point(self):
+    def get_grid_possible_moves(self):
         point = self.grid_points[-1]
-        adjacent_points = []
+        potential_moves = []
         if point.y >= 1:
-            adjacent_points.append(Vec2d(point.x, point.y - 1))
+            potential_moves.append(Vec2d(point.x, point.y - 1))
         if point.y < self.grid.rows:
-            adjacent_points.append(Vec2d(point.x, point.y + 1))
+            potential_moves.append(Vec2d(point.x, point.y + 1))
 
         if point.x >= 1:
-            adjacent_points.append(Vec2d(point.x - 1, point.y))
+            potential_moves.append(Vec2d(point.x - 1, point.y))
         if point.x < self.grid.columns:
-            adjacent_points.append(Vec2d(point.x + 1, point.y))
+            potential_moves.append(Vec2d(point.x + 1, point.y))
 
+        adjacent_points = []
+        for move in potential_moves:
+            if not self.grid.is_grid_collision(move, self.group):
+                adjacent_points.append(move)
         return adjacent_points
 
-    def to_draw_point(self, point):
+    def get_screen_possible_moves(self):
+        moves = self.get_grid_possible_moves()
+        return self.grid_points_to_draw_points(moves)
+
+    def grid_point_to_draw_point(self, point):
         label = self.start_terminal.label
         screen_point = self.grid.get_pos_from_grid_coords(point)
         # Only for labels
@@ -130,3 +160,6 @@ class DrawnLine(object):
         screen_point = (screen_point.x - label.get_width() / 2,
                         screen_point.y - label.get_height() / 2)
         return screen_point
+
+    def grid_points_to_draw_points(self, points):
+        return [self.grid_point_to_draw_point(point)for point in points]
