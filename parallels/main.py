@@ -4,12 +4,12 @@ from pygame.color import Color
 
 from lib.vec2d import Vec2d
 
-from grid import Grid, DrawnLine, Terminal
+from grid import Grid, DrawnLine
 from utils import get_inner_square, alpha
 
 LINES = []
 CUR_LINE = None
-GRID_SIZE = 100  # 100 x 100 grid
+GRID_SIZE = 0  # 100  # 100 x 100 grid
 GRID = None
 
 # Colours
@@ -23,10 +23,16 @@ COLOURS = [WHITE, RED, GREEN, BLUE]
 
 
 def setup():
-    global GRID
+    global GRID, GRID_SIZE
 
-    GRID = Grid(6, 6, GRID_SIZE)  # Cols, Rows
-    GRID.add_terminals('1', Vec2d(0, 1), Vec2d(3, 4), RED)
+    num_blocks = 5
+    screen = pygame.display.get_surface()
+    GRID_SIZE = screen.get_width() / num_blocks
+    GRID = Grid(num_blocks, num_blocks, GRID_SIZE)  # Cols, Rows
+
+    # Add terminals to the grid
+    GRID.add_terminals('1', Vec2d(0, 1), Vec2d(3, 3), RED)
+    GRID.add_terminals('2', Vec2d(4, 0), Vec2d(1, 3), BLUE)
 
 
 def events():
