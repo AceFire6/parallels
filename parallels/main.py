@@ -41,21 +41,29 @@ def events():
                 return False
         elif event.type == pygame.MOUSEBUTTONDOWN:  # Mouse event
             states = pygame.mouse.get_pressed()
-            mouse_pos = pygame.mouse.get_pos()
+            mouse_pos = Vec2d(pygame.mouse.get_pos())
             if states == (1, 0, 0):  # Left click
                 terminal = GRID.get_terminal(mouse_pos)
-                if not CUR_LINE and terminal:
-                    x, y = mouse_pos
-                    CUR_LINE = DrawnLine(GRID, x, y, terminal.colour)
-                    terminal.set_used()
+                if not CUR_LINE:
+                    if terminal and not terminal.used:
+                        x, y = mouse_pos
+                        CUR_LINE = DrawnLine(GRID, x, y, terminal.colour)
+                        terminal.set_used()
                 else:
-                    if terminal:
-                        if not terminal.used:  # line is finished
+                    click_point = GRID.get_vec_grid_coords(mouse_pos)
+                    adj_blocks = CUR_LINE.get_points_adjacent_to_last_point()
+                    if click_point in adj_blocks:
+                        if terminal and not terminal.used:  # line is finished
                             if terminal.group == CUR_LINE.start_terminal.group:
                                 terminal.set_used()
-
+                                GRID.add_line(CUR_LINE)
+                                CUR_LINE = None
+                        else:
+                            CUR_LINE.add_point(mouse_pos)
             elif states == (0, 0, 1):  # Right click
-                pass
+                if CUR_LINE:
+                    CUR_LINE.start_terminal.used = False
+                    CUR_LINE = False
 
     return True
 

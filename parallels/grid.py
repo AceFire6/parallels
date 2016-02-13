@@ -86,7 +86,7 @@ class DrawnLine(object):
     def __init__(self, grid, start_x, start_y, colour):
         self.grid = grid
         self.start_point = grid.get_vec_grid_coords(start_x, start_y)
-        self.grid_points = []
+        self.grid_points = [self.start_point]
         self.colour = colour
 
     @property
@@ -94,23 +94,22 @@ class DrawnLine(object):
         screen_coords = self.grid.get_pos_from_grid_coords(self.start_point)
         return self.grid.get_terminal(screen_coords)
 
-    def add_point(self, x, y):
+    def add_point(self, screen_x_or_pair, screen_y=None):
         # TODO: Add moveback logic
-        self.grid_points.append(self.grid.get_vec_grid_coords(x, y))
+        grid_point = self.grid.get_vec_grid_coords(screen_x_or_pair, screen_y)
+        self.grid_points.append(grid_point)
 
     def get_points_adjacent_to_last_point(self):
         point = self.grid_points[-1]
         adjacent_points = []
-        if point.y != 0:
-            if point.y > 1:
-                adjacent_points.append(Vec2d(point.x, point.y - 1))
-            elif point.y < self.grid.rows:
-                adjacent_points.append(Vec2d(point.x, point.y + 1))
+        if point.y >= 1:
+            adjacent_points.append(Vec2d(point.x, point.y - 1))
+        if point.y < self.grid.rows:
+            adjacent_points.append(Vec2d(point.x, point.y + 1))
 
-        if point.x != 0:
-            if point.x > 1:
-                adjacent_points.append(Vec2d(point.x - 1, point.y))
-            elif point.x < self.grid.columns:
-                adjacent_points.append(Vec2d(point.x + 1, point.y))
+        if point.x >= 1:
+            adjacent_points.append(Vec2d(point.x - 1, point.y))
+        if point.x < self.grid.columns:
+            adjacent_points.append(Vec2d(point.x + 1, point.y))
 
         return adjacent_points
