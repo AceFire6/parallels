@@ -32,6 +32,13 @@ class Grid(object):
     def is_completed(self):
         return len(self.finished_lines) == len(self.terminals)
 
+    def edit_line(self, line_group):
+        for line in self.finished_lines:
+            if line.group == line_group:
+                line.start_terminal.set_used(False)
+                line.end_terminal.set_used(False)
+                self.finished_lines.remove(line)
+
     def add_terminals(self, name, vec_term1, vec_term2, colour):
         self.grid[vec_term1.y][vec_term1.x] = name
         self.grid[vec_term2.y][vec_term2.x] = name
