@@ -48,7 +48,7 @@ def setup():
 
     ui = UI()
 
-    win_text = UIElement('YOU DID IT!', 0, 0, 100, 'win_text', RED)
+    win_text = UIElement('YOU DID IT!', 0, 0, 120, 'win_text', RED)
     center_position = center_text(win_text, 0, 0, width, height)
     win_text.set_position(center_position)
     win_text.hide()
