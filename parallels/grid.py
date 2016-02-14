@@ -13,6 +13,10 @@ class Grid(object):
             [None for i in xrange(columns)] for j in xrange(rows)]
         self.terminals = {}
         self.finished_lines = []
+        self.ui = None
+
+    def add_ui(self, ui):
+        self.ui = ui
 
     def reset(self):
         for line in self.finished_lines:
