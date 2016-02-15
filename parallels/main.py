@@ -1,15 +1,14 @@
 import pygame
-from pygame import Rect
 from pygame.color import Color
 
 from lib.vec2d import Vec2d
 
+from game import Game
 from grid import Grid, DrawnLine
-from ui import UI, UIElement
-from utils import (alpha, center_text, get_inner_square,
-                   get_inner_square_from_point)
+from main_menu import MainMenu
 
 
+MAIN_MENU = None
 FINISHED = False
 MOVES = 0
 START_TIME = 0
@@ -43,27 +42,7 @@ def setup():
     GRID.add_terminals('3', Vec2d(0, 0), Vec2d(3, 1), GREEN)
     GRID.add_terminals('4', Vec2d(1, 2), Vec2d(1, 4), RED + BLUE)
 
-    width = screen.get_width()
-    height = screen.get_height()
-
-    ui = UI()
-
-    win_text = UIElement('YOU DID IT!', 0, 0, 120, 'win_text', RED)
-    center_position = center_text(win_text, 0, 0, width, height)
-    win_text.set_position(center_position)
-    win_text.hide()
-
-    ui.add_element(win_text)
-
-    move_count = UIElement('Moves: 0', 10, 615, 30, 'move_count')
-    ui.add_element(move_count)
-
-    timer = UIElement('Time: 00:00:000', 0, 0, 30, 'time')
-    x = width - timer.get_width() - 10
-    timer.set_position(x, 615)
-    ui.add_element(timer)
-
-    GRID.add_ui(ui)
+    GRID.add_ui(Game())
     # finished_font = pygame.font.SysFont('Arial', 100, bold=True)
     # win_text = 'YOU DID IT!'
     # FINISHED_TEXT = finished_font.render(win_text, 0, RED)
@@ -78,20 +57,25 @@ def events():
             return False
         elif event.type == pygame.KEYUP:  # Key pressed event
             if event.key == pygame.K_ESCAPE:
-                return False
+                GRID.ui.stop()
+                MAIN_MENU.show()
             elif event.key == pygame.K_r:
                 if CUR_LINE:
                     CUR_LINE.start_terminal.set_used(False)
                 GRID.reset()
                 CUR_LINE = None
                 FINISHED = False
-                GRID.ui.get_element('win_text').hide()
+                GRID.ui.reset()
                 MOVES = 0
                 START_TIME = pygame.time.get_ticks()
         elif event.type == pygame.MOUSEBUTTONDOWN and not FINISHED:  # Mouse
             states = pygame.mouse.get_pressed()
             mouse_pos = Vec2d(pygame.mouse.get_pos())
             if states == (1, 0, 0):  # Left click
+                if not MAIN_MENU.hidden:
+                    if not MAIN_MENU.handle_click(mouse_pos):
+                        return False
+
                 terminal = GRID.get_terminal(mouse_pos)
                 if not CUR_LINE:
                     x, y = mouse_pos
@@ -133,81 +117,31 @@ def update():
         FINISHED = True
         GRID.ui.show_element('win_text')
     else:
-        cur_time = pygame.time.get_ticks() - START_TIME
-        minutes = str(cur_time / 60000).zfill(2)
-        seconds = str((cur_time % 60000) / 1000).zfill(2)
-        milliseconds = str(cur_time % 1000).zfill(3)
-        time = (minutes, seconds, milliseconds)
-        GRID.ui.get_element('time').update_text('Time: %s:%s:%s' % time)
+        if GRID.ui.running and MAIN_MENU.hidden:
+            GRID.ui.update()
+        elif MAIN_MENU.hidden and not GRID.ui.running:
+            GRID.ui.start()
 
 
-def render(screen):
+def render():
     """Render section of game loop. Handle drawing."""
-    mouse_pos = Vec2d(pygame.mouse.get_pos())
-    m_grid_pos = GRID.get_vec_grid_coords(mouse_pos.x, mouse_pos.y)
-
-    screen.fill(BLACK)
-
-    # START DRAW GRID
-    for y in xrange(GRID.rows):
-        for x in xrange(GRID.columns):
-            cur_square = Rect(
-                    x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE)
-            # grid_val = GRID.get_grid_value(x, y)
-            # COLOURS[grid_val]  # Change colour based on grid value
-            colour = WHITE
-            if m_grid_pos.x == x and m_grid_pos.y == y:
-                # Semi-transparent Hover
-                inner_sq = get_inner_square(cur_square)
-                sur = screen.convert_alpha()
-                pygame.draw.rect(sur, alpha(WHITE, 75), inner_sq)
-                screen.blit(sur, (0, 0))
-            pygame.draw.rect(screen, colour, cur_square, 2)
-
-    for terms in GRID.terminals.itervalues():
-        for term in terms:
-            screen.blit(term.label, term.pos)
-            # pygame.draw.circle(screen, term.colour, term.pos, term.radius)
-
-    for line in GRID.finished_lines:
-        line_label = line.start_terminal.label
-        for point in line.draw_points:
-            screen.blit(line_label, point)
-    # END DRAW GRID
-
-    # DRAW CUR_LINE
-    if CUR_LINE:
-        points = CUR_LINE.draw_points
-        label = CUR_LINE.start_terminal.label
-
-        for point in points:
-            screen.blit(label, point)
-
-        sur = screen.convert_alpha()
-        for point in CUR_LINE.get_grid_possible_moves():
-            # Semi-transparent Hover
-            inner_sq = get_inner_square_from_point(Vec2d(point), GRID_SIZE)
-            pygame.draw.rect(sur, alpha(WHITE, 50), inner_sq)
-        screen.blit(sur, (0, 0))
-    # END DRAW CUR_LINE
-
-    # DRAW UI
-    if GRID.ui:
-        for element in GRID.ui.elements:
-            if not element.hidden:
-                screen.blit(element.rendered_text, element.pos)
-    # END DRAW UI
+    if not MAIN_MENU.hidden:
+        MAIN_MENU.render()
+    else:
+        GRID.ui.render(GRID, CUR_LINE)
 
     pygame.display.flip()
 
 
 def main():
     """Main game loop. Loop until events returns false."""
-    global START_TIME
+    global START_TIME, MAIN_MENU
 
     pygame.init()
     pygame.display.set_caption("Parallels")
-    screen = pygame.display.set_mode((600, 650), pygame.SRCALPHA)
+    pygame.display.set_mode((600, 650), pygame.SRCALPHA)
+
+    MAIN_MENU = MainMenu()
 
     running = True
 
@@ -220,7 +154,8 @@ def main():
         pygame.time.wait(1)
         running = events()
         update()
-        render(screen)
+        render()
+    pygame.quit()
 
 
 if __name__ == "__main__":

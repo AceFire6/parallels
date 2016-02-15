@@ -27,3 +27,9 @@ def center_text(text, x, y, width, height):
     center = Vec2d(x + width, y + height) / 2
     text_adjustment = Vec2d(-text.get_width() / 2, -text.get_height() / 2)
     return center + text_adjustment
+
+
+def center_element_x(element, width):
+    center = (Vec2d(element.pos) + Vec2d(width, 0)) / 2
+    text_adjustment = Vec2d(-element.get_width() / 2, 0)
+    return center + text_adjustment
