@@ -24,8 +24,8 @@ class Game(UI):
         self.running = False
 
     def reset(self):
-        self.get_element('win_text').hide()
         self.start_time = pygame.time.get_ticks()
+        self.hide_element('win_text')
 
     def setup(self):
         red = (255, 0, 0)
@@ -80,10 +80,7 @@ class Game(UI):
                     screen.blit(sur, (0, 0))
                 pygame.draw.rect(screen, white, cur_square, 2)
 
-        for terms in grid.terminals.itervalues():
-            for term in terms:
-                screen.blit(term.label, term.pos)
-                # pygame.draw.circle(screen, term.colour, term.pos, term.radius)
+        grid.level_manager.render_level()
 
         for line in grid.finished_lines:
             line_label = line.start_terminal.label

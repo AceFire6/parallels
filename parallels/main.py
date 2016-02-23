@@ -6,6 +6,8 @@ from lib.vec2d import Vec2d
 from game import Game
 from grid import Grid, DrawnLine
 from main_menu import MainMenu
+from level_definitions import levels
+from level_manager import LevelManager
 
 
 MAIN_MENU = None
@@ -36,16 +38,30 @@ def setup():
     GRID_SIZE = screen.get_width() / num_blocks
     GRID = Grid(num_blocks, num_blocks, GRID_SIZE)  # Cols, Rows
 
-    # Add terminals to the grid
-    GRID.add_terminals('1', Vec2d(0, 1), Vec2d(3, 3), RED)
-    GRID.add_terminals('2', Vec2d(4, 0), Vec2d(1, 3), BLUE)
-    GRID.add_terminals('3', Vec2d(0, 0), Vec2d(3, 1), GREEN)
-    GRID.add_terminals('4', Vec2d(1, 2), Vec2d(1, 4), RED + BLUE)
-
     GRID.add_ui(Game())
-    # finished_font = pygame.font.SysFont('Arial', 100, bold=True)
-    # win_text = 'YOU DID IT!'
-    # FINISHED_TEXT = finished_font.render(win_text, 0, RED)
+
+    level_manager = LevelManager()
+    level_manager.setup_levels()
+    GRID.add_level_manager(level_manager)
+
+
+def reset_game():
+    global CUR_LINE, FINISHED, START_TIME, MOVES
+
+    if CUR_LINE:
+        CUR_LINE.start_terminal.set_used(False)
+    GRID.reset()
+    CUR_LINE = None
+    FINISHED = False
+    GRID.ui.reset()
+    MOVES = 0
+    START_TIME = pygame.time.get_ticks()
+
+
+def go_to_main_menu():
+    reset_game()
+    GRID.ui.stop()
+    MAIN_MENU.show()
 
 
 def events():
@@ -56,18 +72,19 @@ def events():
         if event.type == pygame.QUIT:  # Program window quit button press
             return False
         elif event.type == pygame.KEYUP:  # Key pressed event
+            if not MAIN_MENU.hidden:
+                return MAIN_MENU.handle_keypress(event.key)
+
             if event.key == pygame.K_ESCAPE:
-                GRID.ui.stop()
-                MAIN_MENU.show()
+                go_to_main_menu()
             elif event.key == pygame.K_r:
-                if CUR_LINE:
-                    CUR_LINE.start_terminal.set_used(False)
-                GRID.reset()
-                CUR_LINE = None
-                FINISHED = False
-                GRID.ui.reset()
-                MOVES = 0
-                START_TIME = pygame.time.get_ticks()
+                reset_game()
+            elif event.key == pygame.K_RETURN and GRID.is_completed:
+                if not GRID.level_manager.next_level():
+                    go_to_main_menu()
+                    GRID.terminals = {}
+                else:
+                    reset_game()
         elif event.type == pygame.MOUSEBUTTONDOWN and not FINISHED:  # Mouse
             states = pygame.mouse.get_pressed()
             mouse_pos = Vec2d(pygame.mouse.get_pos())

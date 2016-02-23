@@ -14,6 +14,20 @@ class Grid(object):
         self.terminals = {}
         self.finished_lines = []
         self.ui = None
+        self.level_manager = None
+
+    def add_level_manager(self, level_manager):
+        self.level_manager = level_manager
+        self.update_terminals()
+
+    def update_terminals(self):
+        term_iter = self.level_manager.active_terminal_groups.iteritems()
+        for group, terminals in term_iter:
+            term1_vec = Vec2d(terminals[0].x, terminals[0].y)
+            term2_vec = Vec2d(terminals[1].x, terminals[1].y)
+            colour = terminals[0].colour
+            self.add_terminals(group, term1_vec, term2_vec, colour)
+        self.level_manager.set_terminals(self.terminals)
 
     def add_ui(self, ui):
         self.ui = ui
@@ -23,18 +37,24 @@ class Grid(object):
             line.start_terminal.set_used(False)
             line.end_terminal.set_used(False)
 
-        for y in xrange(self.rows):
-            for x in xrange(self.columns):
-                term_grid_val = self._terminals_grid[y][x]
-                if term_grid_val is not None:
-                    self.grid[y][x] = term_grid_val.group
-                else:
-                    self.grid[y][x] = 0
+        self.grid = [
+            [0 for i in xrange(self.columns)] for j in xrange(self.rows)]
+        self._terminals_grid = [
+            [None for i in xrange(self.columns)] for j in xrange(self.rows)]
+        # for y in xrange(self.rows):
+        #     for x in xrange(self.columns):
+        #         term_grid_val = self._terminals_grid[y][x]
+        #         if term_grid_val is not None:
+        #             self.grid[y][x] = term_grid_val.group
+        #         else:
+        #             self.grid[y][x] = 0
         self.finished_lines = []
+        self.update_terminals()
 
     @property
     def is_completed(self):
-        return len(self.finished_lines) == len(self.terminals)
+        empty = len(self.terminals) == 0
+        return len(self.finished_lines) == len(self.terminals) and not empty
 
     def edit_line(self, line_group):
         for line in self.finished_lines:
@@ -60,13 +80,25 @@ class Grid(object):
         self.terminals[name] = (term1, term2)
 
     def get_vec_grid_coords(self, screen_x_or_pair, screen_y=None):
+        coords = None
         if screen_y is not None:
             row = screen_y / self.block_size
             column = screen_x_or_pair / self.block_size
-
-            return Vec2d(column, row)
+            coords = Vec2d(column, row)
         else:
-            return Vec2d(screen_x_or_pair / self.block_size)
+            coords = Vec2d(screen_x_or_pair / self.block_size)
+        return self.clamp_to_grid(coords)
+
+    def clamp_to_grid(self, coordinates):
+        if coordinates.x >= self.columns:
+            coordinates.x = self.columns - 1
+        elif coordinates.x < 0:
+            coordinates.x = 0
+        if coordinates.y >= self.rows:
+            coordinates.y = self.rows - 1
+        elif coordinates.x < 0:
+            coordinates.x = 0
+        return coordinates
 
     def get_grid_value_from_screen(self, screen_x, screen_y):
         y = screen_y / self.block_size
@@ -114,7 +146,7 @@ class Terminal(object):
         self.colour = self._inactive_colour  # only for text colour
         self.group = group
         self._font = font.SysFont('Arial', 40, bold=True)
-        self.label = self._font.render(group, 0, self.colour)
+        self.label = self._font.render(str(int(group)+1), 0, self.colour)
         # for text version
         self.pos = Vec2d(x - self.label.get_width() / 2,
                          y - self.label.get_height() / 2)
@@ -122,7 +154,7 @@ class Terminal(object):
 
     def render_label(self, colour):
         self.colour = colour
-        self.label = self._font.render(self.group, 0, self.colour)
+        self.label = self._font.render(str(int(self.group)+1), 0, self.colour)
 
     def matches(self, other_terminal):
         return self.group == other_terminal.group

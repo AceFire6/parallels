@@ -68,6 +68,17 @@ class MainMenu(UIGroup):
                 else:
                     screen.blit(element.rendered_text, element.pos)
 
+    def handle_keypress(self, key):
+        if self.in_help:
+            if key == pygame.K_ESCAPE:
+                self.get_element_by_name('menu').show()
+                self.get_element_by_name('help_screen').hide()
+                self.in_help = False
+        else:
+            if key == pygame.K_ESCAPE:
+                return False
+        return True
+
     def handle_click(self, mouse_pos):
         element = self.get_element_by_pos(mouse_pos)
 
