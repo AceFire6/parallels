@@ -1,4 +1,5 @@
 from pygame import display, Color
+from copy import deepcopy
 
 from grid import Terminal
 from level_definitions import levels
@@ -36,9 +37,24 @@ class LevelManager(object):
     def render_level(self):
         self.levels[self._current_level].render()
 
+    def rotate_terminals(self, terminals):
+        rotated_term_set = []
+        index = 0
+        for terminal_set in terminals:
+            index += 1
+            rotated_set = []
+            for terminal in terminal_set:
+                rotated_set.append((4 - terminal[1], terminal[0]))
+            rotated_term_set.append(rotated_set)
+        return rotated_term_set
+
     def setup_levels(self):
         for name, terminals in levels.iteritems():
             self.add_level(name, terminals)
+            term_copy = deepcopy(terminals)
+            for i in xrange(3):
+                term_copy = deepcopy(self.rotate_terminals(term_copy))
+                self.add_level(name, term_copy)
 
     def add_level(self, name, terminal_sets):
         level = Level(name)

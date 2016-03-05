@@ -59,6 +59,8 @@ class Grid(object):
     def edit_line(self, line_group):
         for line in self.finished_lines:
             if line.group == line_group:
+                for point in line.grid_points:
+                    self.grid[point.y][point.x] = 0
                 line.start_terminal.set_used(False)
                 line.end_terminal.set_used(False)
                 self.finished_lines.remove(line)

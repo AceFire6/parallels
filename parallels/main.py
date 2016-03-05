@@ -102,7 +102,6 @@ def events():
                         if terminal.used:
                             GRID.edit_line(terminal.group)
                         terminal.set_used()
-
                 else:
                     click_point = GRID.get_vec_grid_coords(mouse_pos)
                     adj_blocks = CUR_LINE.get_grid_possible_moves()
