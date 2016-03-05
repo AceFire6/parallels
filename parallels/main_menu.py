@@ -16,7 +16,7 @@ class MainMenu(UIGroup):
         heading_colour = Color('aquamarine')
 
         menu_group = UIGroup(0, 0, 'menu')
-        heading = UIText('Parallels', 0, 0, 'heading', 120, heading_colour)
+        heading = UIText('Path Finder', 0, 0, 'heading', 120, heading_colour)
         y += heading.get_height() + 20
         start = UIText('Start', 0, y, 'start_btn', 80)
         y += start.get_height() + 20

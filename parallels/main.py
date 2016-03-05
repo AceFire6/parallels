@@ -155,7 +155,7 @@ def main():
     global START_TIME, MAIN_MENU
 
     pygame.init()
-    pygame.display.set_caption("Parallels")
+    pygame.display.set_caption('Path Finder')
     pygame.display.set_mode((600, 650), pygame.SRCALPHA)
 
     MAIN_MENU = MainMenu()
