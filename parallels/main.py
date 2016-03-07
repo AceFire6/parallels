@@ -6,13 +6,13 @@ from lib.vec2d import Vec2d
 from game import Game
 from grid import Grid, DrawnLine
 from main_menu import MainMenu
-from level_definitions import levels
 from level_manager import LevelManager
 
 
 MAIN_MENU = None
 FINISHED = False
 MOVES = 0
+RESETS = 0
 START_TIME = 0
 
 LINES = []
@@ -46,7 +46,7 @@ def setup():
 
 
 def reset_game():
-    global CUR_LINE, FINISHED, START_TIME, MOVES
+    global CUR_LINE, FINISHED, START_TIME, MOVES, RESETS
 
     if CUR_LINE:
         CUR_LINE.start_terminal.set_used(False)
@@ -54,8 +54,9 @@ def reset_game():
     CUR_LINE = None
     FINISHED = False
     GRID.ui.reset()
-    MOVES = 0
-    START_TIME = pygame.time.get_ticks()
+    MOVES += 1
+    RESETS += 1
+    # START_TIME = pygame.time.get_ticks()
 
 
 def go_to_main_menu():
@@ -84,7 +85,10 @@ def events():
                     go_to_main_menu()
                     GRID.terminals = {}
                 else:
+                    GRID.level_manager.write_to_file(
+                            MOVES, RESETS, GRID.ui.time)
                     reset_game()
+                    MOVES = 0
         elif event.type == pygame.MOUSEBUTTONDOWN and not FINISHED:  # Mouse
             states = pygame.mouse.get_pressed()
             mouse_pos = Vec2d(pygame.mouse.get_pos())

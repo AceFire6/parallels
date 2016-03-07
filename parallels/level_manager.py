@@ -26,6 +26,13 @@ class LevelManager(object):
     def active_terminal_groups(self):
         return self.current_level.grouped_terminals
 
+    def write_to_file(self, moves, resets, time):
+        time = '%s:%s:%s' % time
+        file_name = 'path-finder-results.txt'
+        with open(file_name, 'a') as score_file:
+            score_file.write('Level #%d: %d %d %s\n' %
+                             (self._current_level, moves, resets, time))
+
     def next_level(self):
         if self._current_level + 1 != len(self.levels):
             self._current_level += 1
