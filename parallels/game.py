@@ -40,7 +40,7 @@ class Game(UI):
 
         self.add_element(win_text)
 
-        move_count = UIText('Moves: 0', 10, 615, 'move_count', size=30)
+        move_count = UIText('Moves: 0', 10, 610, 'move_count', size=35)
         self.add_element(move_count)
 
         # timer = UIText('Time: 00:00:000', 0, 0, 'time', size=30)
