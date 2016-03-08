@@ -43,10 +43,10 @@ class Game(UI):
         move_count = UIText('Moves: 0', 10, 615, 'move_count', size=30)
         self.add_element(move_count)
 
-        timer = UIText('Time: 00:00:000', 0, 0, 'time', size=30)
-        x = width - timer.get_width() - 10
-        timer.set_position(x, 615)
-        self.add_element(timer)
+        # timer = UIText('Time: 00:00:000', 0, 0, 'time', size=30)
+        # x = width - timer.get_width() - 10
+        # timer.set_position(x, 615)
+        # self.add_element(timer)
 
     def update(self):
         cur_time = pygame.time.get_ticks() - self.start_time
@@ -54,7 +54,9 @@ class Game(UI):
         seconds = str((cur_time % 60000) / 1000).zfill(2)
         milliseconds = str(cur_time % 1000).zfill(3)
         self.time = (minutes, seconds, milliseconds)
-        self.get_element('time').update_text('Time: %s:%s:%s' % self.time)
+        time = self.get_element('time')
+        if time:
+            time.update_text('Time: %s:%s:%s' % self.time)
 
     def render(self, grid, cur_line):
         mouse_pos = Vec2d(pygame.mouse.get_pos())
