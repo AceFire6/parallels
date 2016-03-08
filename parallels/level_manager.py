@@ -1,3 +1,4 @@
+import pygame
 from pygame import display, Color
 from copy import deepcopy
 
@@ -103,5 +104,5 @@ class Level(object):
     def render(self):
         screen = display.get_surface()
         for terminal in self.drawn_terminals:
-            screen.blit(terminal.label, terminal.pos)
-            # pygame.draw.circle(screen, terminal.colour, terminal.pos, terminal.radius)
+            # screen.blit(terminal.label, terminal.pos)
+            pygame.draw.circle(screen, terminal.colour, terminal.pos, terminal.radius)

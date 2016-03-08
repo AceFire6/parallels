@@ -141,31 +141,32 @@ class Terminal(object):
         self.x = x
         self.y = y
         # for colours
-        # self.pos = Vec2d(x, y)
+        self.pos = Vec2d(x, y)
         self.radius = radius
-        self._active_colour = (255, 255, 255)
-        self._inactive_colour = (150, 150, 150)
-        self.colour = self._inactive_colour  # only for text colour
+        self.colour = colour
+        # self._active_colour = (255, 255, 255)
+        # self._inactive_colour = (150, 150, 150)
+        # self.colour = self._inactive_colour  # only for text colour
         self.group = group
-        self._font = font.SysFont('Arial', 40, bold=True)
-        self.label = self._font.render(str(int(group)+1), 0, self.colour)
+        # self._font = font.SysFont('Arial', 40, bold=True)
+        # self.label = self._font.render(str(int(group)+1), 0, self.colour)
         # for text version
-        self.pos = Vec2d(x - self.label.get_width() / 2,
-                         y - self.label.get_height() / 2)
+        # self.pos = Vec2d(x - self.label.get_width() / 2,
+        #                  y - self.label.get_height() / 2)
         self.used = False
 
     def render_label(self, colour):
         self.colour = colour
-        self.label = self._font.render(str(int(self.group)+1), 0, self.colour)
+        # self.label = self._font.render(str(int(self.group)+1), 0, self.colour)
 
     def matches(self, other_terminal):
         return self.group == other_terminal.group
 
     def set_used(self, used=True):
         self.used = used
-        self.render_label(self._active_colour)
+        # self.render_label(self._active_colour)
         if not used:
-            self.render_label(self._inactive_colour)
+            # self.render_label(self._inactive_colour)
             self.used = used
 
 
@@ -223,12 +224,12 @@ class DrawnLine(object):
         return self.grid_points_to_draw_points(moves)
 
     def grid_point_to_draw_point(self, point):
-        label = self.start_terminal.label
+        # label = self.start_terminal.label
         screen_point = self.grid.get_pos_from_grid_coords(point)
         # Only for labels
-        screen_point += self.grid.block_size / 2
-        screen_point = (screen_point.x - label.get_width() / 2,
-                        screen_point.y - label.get_height() / 2)
+        # screen_point += self.grid.block_size / 2
+        # screen_point = (screen_point.x - label.get_width() / 2,
+        #                 screen_point.y - label.get_height() / 2)
         return Vec2d(screen_point)
 
     def grid_points_to_draw_points(self, points):

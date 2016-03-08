@@ -67,7 +67,7 @@ def go_to_main_menu():
 
 def events():
     """Event section of game loop. Handle user input. Return boolean."""
-    global CUR_LINE, FINISHED, MOVES, START_TIME
+    global CUR_LINE, FINISHED, MOVES, START_TIME, RESETS
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  # Program window quit button press
@@ -89,6 +89,7 @@ def events():
                             MOVES, RESETS, GRID.ui.time)
                     reset_game()
                     MOVES = 0
+                    RESETS = 0
         elif event.type == pygame.MOUSEBUTTONDOWN and not FINISHED:  # Mouse
             states = pygame.mouse.get_pressed()
             mouse_pos = Vec2d(pygame.mouse.get_pos())

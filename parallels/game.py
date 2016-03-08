@@ -33,14 +33,14 @@ class Game(UI):
         width = screen.get_width()
         height = screen.get_height()
 
-        win_text = UIText('YOU DID IT!', 0, 0, 'win_text', 120, red)
+        win_text = UIText('YOU DID IT!', 0, 0, 'win_text', 120, Color('Black'))
         center_position = center_text(win_text, 0, 0, width, height)
         win_text.set_position(center_position)
         win_text.hide()
 
         self.add_element(win_text)
 
-        move_count = UIText('Moves: 0', 10, 615, 'move_count', size=30)
+        move_count = UIText('Moves: 0', 10, 610, 'move_count', size=35)
         self.add_element(move_count)
 
         # timer = UIText('Time: 00:00:000', 0, 0, 'time', size=30)
@@ -72,8 +72,6 @@ class Game(UI):
         for y in xrange(grid.rows):
             for x in xrange(grid.columns):
                 cur_square = Rect(x * size, y * size, size, size)
-                # grid_val = GRID.get_grid_value(x, y)
-                # COLOURS[grid_val]  # Change colour based on grid value
                 if m_grid_pos.x == x and m_grid_pos.y == y:
                     # Semi-transparent Hover
                     inner_sq = get_inner_square(cur_square)
@@ -85,18 +83,24 @@ class Game(UI):
         grid.level_manager.render_level()
 
         for line in grid.finished_lines:
-            line_label = line.start_terminal.label
+            # line_label = line.start_terminal.label
             for point in line.draw_points:
-                screen.blit(line_label, point)
+                x, y = point
+                sq = get_inner_square(Rect(x, y, size, size))
+                pygame.draw.rect(screen, line.colour, sq)
+                # screen.blit(line_label, point)
         # END DRAW GRID
 
         # DRAW CUR_LINE
         if cur_line:
             points = cur_line.draw_points
-            label = cur_line.start_terminal.label
+            # label = cur_line.start_terminal.label
 
             for point in points:
-                screen.blit(label, point)
+                x, y = point
+                sq = get_inner_square(Rect(x, y, size, size))
+                pygame.draw.rect(screen, cur_line.colour, sq)
+                # screen.blit(label, point)
 
             sur = screen.convert_alpha()
             for point in cur_line.get_grid_possible_moves():
