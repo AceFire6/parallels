@@ -43,10 +43,10 @@ class Game(UI):
         move_count = UIText('Moves: 0', 10, 610, 'move_count', size=35)
         self.add_element(move_count)
 
-        # timer = UIText('Time: 00:00:000', 0, 0, 'time', size=30)
-        # x = width - timer.get_width() - 10
-        # timer.set_position(x, 615)
-        # self.add_element(timer)
+        timer = UIText('Time: 00:00:000', 0, 0, 'time', size=35)
+        x = width - timer.get_width() - 10
+        timer.set_position(x, 610)
+        self.add_element(timer)
 
     def update(self):
         cur_time = pygame.time.get_ticks() - self.start_time
