@@ -81,12 +81,13 @@ def events():
             elif event.key == pygame.K_r:
                 reset_game()
             elif event.key == pygame.K_RETURN and GRID.is_completed:
-                if not GRID.level_manager.next_level():
+                next_level = GRID.level_manager.next_level()
+                GRID.level_manager.write_to_file(
+                            MOVES, RESETS, GRID.ui.time)
+                if not next_level:
                     go_to_main_menu()
                     GRID.terminals = {}
                 else:
-                    GRID.level_manager.write_to_file(
-                            MOVES, RESETS, GRID.ui.time)
                     reset_game()
                     MOVES = 0
                     RESETS = 0
